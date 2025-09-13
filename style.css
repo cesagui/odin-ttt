@@ -43,7 +43,7 @@ html, body{
 
 .slot {
     border: 4px solid var(--primary-color);
-    font-size: 7em;
+    font-size: 6.75em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -68,10 +68,43 @@ html, body{
 
 .score-board{
     grid-area: score-board;
-    
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+button {
+    animation: fadeIn 1s ease-in-out forwards;
+    padding: 0.5em 2em;
+    background-color: #E7F2EF;
+    color: #19183B;
+    font-size: 1.5em;
+    font-weight: 600;
+    border-radius: 12px;
+    border:none;
+    font-family:'Space Mono', monospace;
+}
+
+#new-round:hover{
+    cursor: pointer;
+}
+
+.flashing {
+  animation: blink 1s ease-in-out infinite;
+}
+
 .footer{
     grid-area: footer;
     font-size: 1.5em;
     text-align: center;
+}
+
+@keyframes blink {
+  0% { color:var(--primary-color);}
+  50% {  color:var(--background-color);}
+  100% {  color:var(--primary-color);}
+}
+
+@keyframes fadeIn {
+    from { opacity: 0;}
+    to {opacity: 1;}
 }

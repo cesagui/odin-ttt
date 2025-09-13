@@ -1,4 +1,45 @@
-let gameController = createNewGame();
+let slots = document.querySelectorAll('.slot');
+let rowSize = 3;
+pageSetUp(rowSize);
+let game = createNewGame('Jerry', 'Bob', rowSize);
+
+function pageSetUp(rowSize = 3){
+    boardSetup(rowSize);
+    // loadGameState(rowSize);
+}
+
+function boardSetup(rowSize = 3){
+    let gameDiv = document.querySelector('.game');
+    
+    for (let i = 0; i < rowSize*rowSize; i++){
+        let newButton = document.createElement("div");
+        let slotNum = i;
+        let rowNum = slotNum % 3;
+        let colNum = Math.floor(slotNum / 3);
+
+        newButton.id = "slot-" + i;
+        newButton.classList.add('slot');
+
+        newButton.classList.add('R'+rowNum);
+        newButton.classList.add('C'+colNum);
+        if ((i/4) === Math.floor(i/4)){
+            newButton.classList.add('D1');
+        }
+        if ((i/2) >= 1 && (i/2) <= 3 && (i/2) === Math.floor(i/4)){
+            newButton.classList.add('D2');
+        }
+        
+        newButton.addEventListener('click', (event) =>{
+            const target = event.target;
+            // 0 1 2
+            // 3 4 5
+            // 6 7 8
+            
+            target.textContent = game.takeTurn(colNum, rowNum);
+        });
+        gameDiv.appendChild(newButton);
+    }
+}
 
 function createNewGame(p1, p2, rowSize){
     let playerOne = createNewPlayer(p1, 'X');
@@ -30,7 +71,7 @@ function createNewGame(p1, p2, rowSize){
                 
                 const res = this.evaluateBoard();
                 if (res != '') {
-                    alert(res + ' wins!');
+                    // alert(res + ' wins!');
                 }
 
                 // swap players
@@ -40,13 +81,36 @@ function createNewGame(p1, p2, rowSize){
                     this.currentPlayer = this.playerOne;
                 }
                 this.displayBoard();
+                return this.board[x][y];
             } else {
                 alert('You cannot play into an occupied slot!');
+                return currentSlot;
             }
             
         },
+        selectWinningSlots(winningSlots){
+            console.log('attempt to select' + winningSlots);
+            let winners = document.querySelectorAll("."+winningSlots);
+
+            winners.forEach(element => {
+                element.classList.add('flashing');
+            });
+
+            this.createNewRoundButton();
+        },
+        createNewRoundButton(){
+            let newRoundButton = document.createElement('button');
+            newRoundButton.id = 'new-round';
+            newRoundButton.textContent = "NEW ROUND";
+            const scoreboard = document.querySelector(".score-board");
+            scoreboard.appendChild(newRoundButton);
+        },
         resetBoard(){
-            board = [];
+            this.board = new Array(rowSize).fill("").map(() => new Array(rowSize).fill(""));
+            const slots = document.querySelectorAll('.slot');
+            slots.forEach(element => element.textContent = '');
+            const flashing = document.querySelectorAll('.flashing');
+            flashing.forEach(element => element.classList.remove('flashing'));
         },
         resetScores(){
             score = [0,0];
@@ -66,20 +130,26 @@ function createNewGame(p1, p2, rowSize){
                         }
                         return '';
                     } else {
+                        console.log('triggered by diag');
                         return check;
                     }
                 } else {
+                    console.log('triggered by col');
                     return check;
                 }
             } else {
+                console.log('triggered by row');
                 return check;
             }
         },
         rowCheck(arr){
             for (let i = 0; i < arr.length; i++){
                 const row = arr[i];
+                console.log('reading ROW: ' + i + ": " + row);
                 const firstValue = row[0];
                 if (row.every(entry => entry === firstValue) && firstValue != ''){
+                    console.log('Returning: ' + firstValue );
+                    this.selectWinningSlots('C'+i);
                     return firstValue;
                 }
             }
@@ -93,6 +163,7 @@ function createNewGame(p1, p2, rowSize){
                 }
                 const firstValue = col[0];
                 if (col.every(entry => entry === firstValue) && firstValue != ''){
+                    this.selectWinningSlots('R'+i);
                     return firstValue; // return the marker
                 }
             }
@@ -108,11 +179,13 @@ function createNewGame(p1, p2, rowSize){
 
             let firstValue = diagonalOne[0];
             if (diagonalOne.every(entry => entry === firstValue) && firstValue != ''){
+                this.selectWinningSlots('D1');
                 return firstValue;
             }
 
             firstValue = diagonalTwo[0];
             if (diagonalTwo.every(entry => entry === firstValue) && firstValue != ''){
+                this.selectWinningSlots('D2');
                 return firstValue;
             }
             return '';
@@ -120,7 +193,7 @@ function createNewGame(p1, p2, rowSize){
         fullCheck(arr){
             for (let i = 0; i < arr.length; i++){
                 for (let j = 0; j < arr[i].length; j++){
-                    if (arr[i][j] == ' '){
+                    if (arr[i][j] == ''){
                         return false; // not full
                     }
                 }
